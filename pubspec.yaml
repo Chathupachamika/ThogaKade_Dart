@@ -1,4 +1,4 @@
-name: dart_first
+name: command_handler
 description: A sample command-line application with basic argument parsing.
 version: 0.0.1
 # repository: https://github.com/my_org/my_repo
@@ -8,7 +8,7 @@ environment:
 
 dependencies:
   args: ^2.5.0
-  mysql1: ^0.10.1   # Add this line to include the MySQL package
+  mysql1: ^0.20.0   # Add this line to include the MySQL package
 
 dev_dependencies:
   lints: ^5.0.0

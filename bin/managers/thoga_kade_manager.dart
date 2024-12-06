@@ -32,11 +32,11 @@ class ThogaKadeManager {
   }
 
   Future<void> addVegetable(Vegetable vegetable) async {
-    if (_state is LoadedState) {
-      final inventory = List<Vegetable>.from((_state as LoadedState).inventory)
-        ..add(vegetable);
-      await _repository.saveInventory(inventory);
-      _state = LoadedState(inventory);
+    try {
+      await _repository.addVegetable(vegetable);
+      await loadInventory(); // Refresh state after adding
+    } catch (e) {
+      _state = ErrorState('Failed to add vegetable: $e');
     }
   }
 }

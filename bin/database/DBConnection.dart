@@ -1,41 +1,43 @@
-import 'package:mysql1/mysql1.dart';
-
 class DBConnection {
   static DBConnection? _instance;
-  static MySqlConnection? _connection;
+  static List<Map<String, dynamic>> _database = [];
 
-  // Private constructor
   DBConnection._();
 
-  // Singleton instance getter
-  static Future<DBConnection> getInstance() async {
-    if (_instance == null) {
-      _instance = DBConnection._();
-      await _initializeConnection();
-    }
+  // Singleton instance
+  static DBConnection getInstance() {
+    _instance ??= DBConnection._();
     return _instance!;
   }
 
-  static Future<void> _initializeConnection() async {
-    try {
-      _connection = await MySqlConnection.connect(ConnectionSettings(
-        host: 'localhost',
-        port: 3306,
-        user: 'root',
-        db: 'Thoga_Kade',
-        password: '1234',
-      ));
-      print("Database connected successfully!");
-    } catch (e) {
-      print("Error connecting to the database: $e");
+  // CRUD Operations
+  void create(Map<String, dynamic> record) {
+    _database.add(record);
+  }
+
+  List<Map<String, dynamic>> readAll() {
+    return _database;
+  }
+
+  Map<String, dynamic>? readById(String id) {
+    return _database.firstWhere((record) => record['id'] == id, orElse: () => {});
+  }
+
+  void update(String id, Map<String, dynamic> updatedRecord) {
+    final index = _database.indexWhere((record) => record['id'] == id);
+    if (index != -1) {
+      _database[index] = updatedRecord;
+    } else {
+      throw Exception('Record not found.');
     }
   }
 
-  static MySqlConnection? get connection => _connection;
+  void delete(String id) {
+    _database.removeWhere((record) => record['id'] == id);
+  }
 
-  static Future<void> closeConnection() async {
-    await _connection?.close();
-    _connection = null;
-    print("Database connection closed.");
+  // Clear all records
+  void clearDatabase() {
+    _database.clear();
   }
 }

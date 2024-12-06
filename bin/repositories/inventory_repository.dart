@@ -1,42 +1,59 @@
-import 'dart:convert';
-import 'dart:io';
 import '../models/vegetable.dart';
+import '../database/DBConnection.dart';
 
 class InventoryRepository {
-  final String filePath = 'database/inventory.json';
+  final DBConnection _dbConnection = DBConnection.getInstance();
 
+  // Load inventory from the in-memory database
   Future<List<Vegetable>> loadInventory() async {
-    try {
-      final file = File(filePath);
-      if (!await file.exists()) return [];
-      final data = jsonDecode(await file.readAsString()) as List;
-      return data.map((e) => Vegetable(
-        id: e['id'],
-        name: e['name'],
-        pricePerKg: e['pricePerKg'],
-        availableQuantity: e['availableQuantity'],
-        category: e['category'],
-        expiryDate: DateTime.parse(e['expiryDate']),
-      )).toList();
-    } catch (e) {
-      throw Exception('Error loading inventory: $e');
+    return _dbConnection.readAll().map((data) {
+      return Vegetable(
+        id: data['id'],
+        name: data['name'],
+        pricePerKg: data['pricePerKg'],
+        availableQuantity: data['availableQuantity'],
+        category: data['category'],
+        expiryDate: DateTime.parse(data['expiryDate']),
+      );
+    }).toList();
+  }
+
+  // Save updated inventory to the in-memory database
+  Future<void> saveInventory(List<Vegetable> inventory) async {
+    for (var vegetable in inventory) {
+      await updateVegetable(vegetable);
     }
   }
 
-  Future<void> saveInventory(List<Vegetable> inventory) async {
-    try {
-      final file = File(filePath);
-      final data = inventory.map((v) => {
-        'id': v.id,
-        'name': v.name,
-        'pricePerKg': v.pricePerKg,
-        'availableQuantity': v.availableQuantity,
-        'category': v.category,
-        'expiryDate': v.expiryDate.toIso8601String(),
-      }).toList();
-      await file.writeAsString(jsonEncode(data));
-    } catch (e) {
-      throw Exception('Error saving inventory: $e');
-    }
+  // Add a new vegetable to the in-memory database
+  Future<void> addVegetable(Vegetable vegetable) async {
+    _dbConnection.create({
+      'id': vegetable.id,
+      'name': vegetable.name,
+      'pricePerKg': vegetable.pricePerKg,
+      'availableQuantity': vegetable.availableQuantity,
+      'category': vegetable.category,
+      'expiryDate': vegetable.expiryDate.toIso8601String(),
+    });
+  }
+
+  // Update an existing vegetable in the in-memory database
+  Future<void> updateVegetable(Vegetable vegetable) async {
+    _dbConnection.update(
+      vegetable.id,
+      {
+        'id': vegetable.id,
+        'name': vegetable.name,
+        'pricePerKg': vegetable.pricePerKg,
+        'availableQuantity': vegetable.availableQuantity,
+        'category': vegetable.category,
+        'expiryDate': vegetable.expiryDate.toIso8601String(),
+      },
+    );
+  }
+
+  // Remove vegetable from the in-memory database
+  Future<void> removeVegetable(String id) async {
+    _dbConnection.delete(id);
   }
 }

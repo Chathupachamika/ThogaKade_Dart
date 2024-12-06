@@ -9,9 +9,7 @@ class InventoryManager {
   }
 
   Future<void> addVegetable(Vegetable vegetable) async {
-    final inventory = await _repository.loadInventory();
-    inventory.add(vegetable);
-    await _repository.saveInventory(inventory);
+    await _repository.addVegetable(vegetable);
   }
 
   Future<void> updateStock(String id, double quantity) async {
@@ -22,8 +20,6 @@ class InventoryManager {
   }
 
   Future<void> removeVegetable(String id) async {
-    final inventory = await _repository.loadInventory();
-    inventory.removeWhere((v) => v.id == id);
-    await _repository.saveInventory(inventory);
+    await _repository.removeVegetable(id);
   }
 }
